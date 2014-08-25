@@ -1,0 +1,66 @@
+<html ng-app="dailytipMobile">
+  <head>
+    <meta charset="utf-8">
+    <title>Map</title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    
+    <link href="lib/ionic/css/ionic.min.css" rel="stylesheet">
+	<link href="css/style.css" rel="stylesheet">
+	
+    <script src="lib/ionic/js/ionic.bundle.min.js"></script>
+	<script src="lib/ionic/js/angular/angular-resource.min.js"></script>
+	
+	<script src="js/app.js"></script>
+	
+    <!-- google maps javascript -->
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places,geometry"></script>
+	<script>
+		google.maps.LatLng.prototype.distanceFrom = function(newLatLng) {
+              // setup our variables
+              var lat1 = this.lat();
+              var radianLat1 = lat1 * ( Math.PI  / 180 );
+              var lng1 = this.lng();
+              var radianLng1 = lng1 * ( Math.PI  / 180 );
+              var lat2 = newLatLng.lat();
+              var radianLat2 = lat2 * ( Math.PI  / 180 );
+              var lng2 = newLatLng.lng();
+              var radianLng2 = lng2 * ( Math.PI  / 180 );
+              // sort out the radius, MILES or KM?
+              var earth_radius = 6378.1; // (km = 6378.1) OR (miles = 3959) metros 6378100 - radius of the earth
+
+              // sort our the differences
+              var diffLat =  ( radianLat1 - radianLat2 );
+              var diffLng =  ( radianLng1 - radianLng2 );
+              // put on a wave (hey the earth is round after all)
+              var sinLat = Math.sin( diffLat / 2  );
+              var sinLng = Math.sin( diffLng / 2  );
+
+              // maths - borrowed from http://www.opensourceconnections.com/wp-content/uploads/2009/02/clientsidehaversinecalculation.html
+              var a = Math.pow(sinLat, 2.0) + Math.cos(radianLat1) * Math.cos(radianLat2) * Math.pow(sinLng, 2.0);
+
+              // work out the distance
+              var distance = earth_radius * 2 * Math.asin(Math.min(1, Math.sqrt(a)));
+
+              // return the distance
+              return distance;
+          }
+	</script>
+	
+	
+  </head>
+  <body ng-controller="MapCtrl">
+    <div class="bar bar-header bar-dark">
+		<select style="width:80%" data-ng-model="tipoEstabelecimento">
+		  <option ng-repeat="estabelecimento in listaDeEstabelecimento" value="{{estabelecimento.descricao}}">
+            {{estabelecimento.descricao}}
+          </option>
+		</select>
+		<button style="width:20%" class="button button-positive" data-ng-click="buscarPromocoes()">
+			Buscar
+		</button>
+	</div>
+	
+      <div id="map" markers="promoMarkers" ></div>
+   
+  </body>
+</html>
