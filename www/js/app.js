@@ -1,6 +1,6 @@
 angular.module('dailytipMobile', ['ionic'])
 
-    .controller('MapCtrl', function($scope, $ionicLoading, $http) {
+    .controller('MapCtrl', function($scope, $ionicLoading, $http, $ionicPopup) {
 		
         var mapOptions = {
           center: new google.maps.LatLng(43.07493,-89.381388),
@@ -78,10 +78,10 @@ angular.module('dailytipMobile', ['ionic'])
                         marker.id=k;
                         var imagem = ret[k].promocoes[0].linkImagem;
                         if (imagem == null || imagem == "") {
-                        	imagem = "../../images/noimage.jpg";
+                        	imagem = "../imagens/noimage.jpg";
                         }
                         
-                       var estabelecimentoPromocional = 
+                       $scope.estabelecimentoPromocional = 
                         {
                           estabelecimentoId:ret[k].id,
                           promocaoId:ret[k].promocoes[0].id,
@@ -96,11 +96,49 @@ angular.module('dailytipMobile', ['ionic'])
                           email:ret[k].email,
                           markId:marker.id
                         };
+						
+                        $scope.listaTemplateDetalhesPromocoes.push(estabelecimentoPromocional);
                         
-                        $scope.listaTemplateDetalhesPromocoes.push($scope.estabelecimentoPromocional);
-                        
+						google.maps.event.addListener(marker, 'click', (function(marker, k, estabelecimentoPromocional) {
+                            return function() {
+                            	 if(marker.iw){
+                                     marker.iw.close();
+                                     marker.iw.open($scope.map,marker);
+                                 }else{
+                                     $http({method:'GET',url:'modal/marker.tpl.html'}).success(function(data, status, headers, config) {
+                                        var output = Mustache.render(data, angular.copy(estabelecimentoPromocional));
+                                        var infowindow = new google.maps.InfoWindow({content: output});
+                                        infowindow.open($scope.map,marker);
+                                        marker.iw=infowindow;
+                                     });
+									 
+									 $http({method:'GET',url:'modal/promo-full.tpl.html'}).success(function(data, status, headers, config) {
+                                     	var output = Mustache.render(data, angular.copy(estabelecimentoPromocional));
+                                     	$scope.listaTemplateDetalhesPromocoes.push(
+                                     			{markId:estabelecimentoPromocional.markId,
+                                     			 title:estabelecimentoPromocional.tituloPromocao,
+                                     			 template:output});
+                                     });
+                                 }
+                            }
+                          })(marker, k, estabelecimentoPromocional));
                     }
 				 }
             });
-        }
+        };
+		
+		$scope.ola = function() {
+			alert("olaaa");
+		}
+		
+		$scope.visualizarPromocao = function(markId) {
+		 var alertPopup = $ionicPopup.alert({
+		   title: 'Don\'t eat that!',
+		   template: 'It might taste good'
+		 });
+		 alertPopup.then(function(res) {
+		   console.log('Thank you for not eating my delicious ice cream cone');
+		 });
+		};
+
     });
